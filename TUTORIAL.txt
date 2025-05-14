@@ -1,0 +1,203 @@
+# Binance Futures Trading Bot Tutorial
+
+This tutorial guides you through setting up and running the Binance futures trading bot, which automates trading using RSI and Bollinger Bands strategies. The bot supports real trading, simulated trading, SL Streak Pausing, Inverted Mode, and Telegram notifications. It operates in three terminals: real trading, PnL monitoring, and simulated trading.
+
+## System Overview
+
+- Purpose: Automates futures trading on Binance with configurable strategies.
+- Features:
+  - RSI (buy &lt;= 40, sell &gt;= 68) and Bollinger Bands (20-period, 2.0 deviation) signal engines.
+  - Trading parameters: 100 USDT, 30x leverage, 0.2% TP/SL, pairs (XRPUSDT, DOGEUSDT, TRXUSDT, BTCUSDT), timeframes (1m, 5m).
+  - SL Streak Pausing: Pauses after 3 SLs (7 min for XRPUSDT/DOGEUSDT/TRXUSDT, 5 min for BTCUSDT).
+  - Inverted Mode: Inverts orders (e.g., LONG to SHORT) after 3 SLs for 2 signals.
+  - Telegram notifications for order closures, SL streaks, pauses, and inversions.
+  - Logging to bot.log and data storage in CSVs (signals.csv, orders.csv, etc.).
+- Files:
+  - config.py: Configuration settings.
+  - utils.py: Shared utilities.
+  - sinal_engine.py: RSI trading engine (real).
+  - sinal_engine_bollinger.py: Bollinger trading engine (real).
+  - simulated_order_engine.py: Simulated trading engine.
+  - monitor_pnl.py: PnL calculations and Telegram notifications.
+  - main.py: Runs real trading engines.
+  - binance_utils.py: Binance API utilities.
+  - test_api_keys.py: Tests Binance API keys.
+  - initialize_csvs.py: Initializes CSVs.
+  - analyze_inverted_mode.py: Analyzes Inverted Mode performance.
+  - requirements.txt: Python dependencies.
+  - README.md: Detailed documentation.
+
+## Prerequisites
+
+1. Python 3.12 or higher installed.
+2. Binance account with API key and secret.
+3. Telegram bot with token and two chat IDs (real and simulated notifications).
+4. Windows system (paths assume C:\\Users\\User\\Desktop\\novo_teste).
+
+## Step-by-Step Setup
+
+1. **Prepare the Environment**
+
+   - Download or clone all bot files to C:\\Users\\User\\Desktop\\novo_teste.
+   - Ensure all files are present: config.py, utils.py, sinal_engine.py, sinal_engine_bollinger.py, simulated_order_engine.py, monitor_pnl.py, main.py, binance_utils.py, test_api_keys.py, initialize_csvs.py, analyze_inverted_mode.py, requirements.txt, README.md.
+
+2. **Install Dependencies**
+
+   - Open a command prompt and navigate to the bot directory:
+
+     ```
+     cd C:\Users\User\Desktop\novo_teste
+     ```
+
+   - Install required Python packages:
+
+     ```
+     pip install -r requirements.txt
+     ```
+
+   - Verify installation (should include pandas, numpy, python-binance, filelock, requests).
+
+3. **Configure the Bot**
+
+   - Open config.py in a text editor (e.g., Notepad).
+   - Update the following:
+     - REAL_API_KEY: Your Binance API key.
+     - REAL_API_SECRET: Your Binance API secret.
+     - TELEGRAM_BOT_TOKEN: Your Telegram bot token.
+     - TELEGRAM_CHAT_ID: Chat ID for real trading notifications (e.g., 6097421181).
+     - SIMULATED_TELEGRAM_CHAT_ID: Chat ID for simulated trading notifications (e.g., 6097421182).
+   - Optional: Adjust trading parameters:
+     - PAIRS, TIMEFRAMES: Enable/disable pairs and timeframes.
+     - ORDER_VALUE_USDT, LEVERAGE, TAKE_PROFIT_PERCENT, STOP_LOSS_PERCENT: Set order size and TP/SL.
+     - INVERTED_MODE_ENABLED, SIMULATED_INVERTED_MODE_ENABLED: Enable/disable Inverted Mode.
+     - INVERTED_MODE_CONFIG, SIMULATED_INVERTED_MODE_CONFIG: Set SL thresholds and inversion counts.
+   - Save config.py.
+
+4. **Initialize CSV Files**
+
+   - Run the CSV initialization script to create all required CSVs with correct schemas:
+
+     ```
+     C:\Python312\python.exe initialize_csvs.py
+     ```
+
+   - This creates: signals.csv, orders.csv, orders_pnl.csv, prices_statistics.csv, pause_log.csv, simulated_orders.csv, simulated_pause_log.csv, inverted_state.csv, simulated_inverted_state.csv.
+
+   - Check bot.log for initialization confirmation.
+
+5. **Test Binance API Keys**
+
+   - Verify API connectivity:
+
+     ```
+     C:\Python312\python.exe test_api_keys.py
+     ```
+
+   - Look for "Conexão com Binance API bem-sucedida!" in the console or bot.log. If it fails, check REAL_API_KEY and REAL_API_SECRET in config.py.
+
+## Running the Bot
+
+The bot runs in three separate terminals to ensure isolation between real and simulated trading.
+
+1. **Real Trading Terminal**
+
+   - Open a command prompt and navigate to the bot directory:
+
+     ```
+     cd C:\Users\User\Desktop\novo_teste
+     ```
+
+   - Start the real trading bot:
+
+     ```
+     C:\Python312\python.exe main.py
+     ```
+
+   - This runs RSI and Bollinger engines, placing real orders and writing to signals.csv, orders.csv, orders_pnl.csv, prices_statistics.csv, pause_log.csv, inverted_state.csv.
+
+   - Monitor bot.log for events like "\[RSI\] Sinal gerado" or "\[INVERTED MODE\] Ordem invertida".
+
+2. **PnL Monitoring and Telegram Terminal**
+
+   - Open a second command prompt and navigate to the bot directory:
+
+     ```
+     cd C:\Users\User\Desktop\novo_teste
+     ```
+
+   - Start the PnL monitor:
+
+     ```
+     C:\Python312\python.exe monitor_pnl.py
+     ```
+
+   - This updates pnl.csv every 60 seconds and sends Telegram notifications for real order closures, SL streaks, pauses, and Inverted Mode events to TELEGRAM_CHAT_ID.
+
+   - Check Telegram chat (e.g., ID 6097421181) for messages like "🔔 Ordem Fechada" or "🔄 Inverted Mode Ativado".
+
+3. **Simulated Trading Terminal**
+
+   - Open a third command prompt and navigate to the bot directory:
+
+     ```
+     cd C:\Users\User\Desktop\novo_teste
+     ```
+
+   - Start the simulated trading bot:
+
+     ```
+     C:\Python312\python.exe simulated_order_engine.py
+     ```
+
+   - This simulates trades using signals.csv and prices_statistics.csv, writing to simulated_orders.csv, simulated_pause_log.csv, simulated_inverted_state.csv, and sending Telegram notifications to SIMULATED_TELEGRAM_CHAT_ID.
+
+   - Monitor bot.log for "\[SIMULATED\]" events and Telegram chat (e.g., ID 6097421182) for simulated order notifications.
+
+## Analyzing Performance
+
+- **Check Logs**: Open bot.log to view all events, including signal generation, order placements, SL streaks, pauses, and Inverted Mode activations.
+
+- **Analyze Inverted Mode**:
+
+  - Run the analysis script:
+
+    ```
+    C:\Python312\python.exe analyze_inverted_mode.py
+    ```
+
+  - Check inverted_mode_analysis.txt for performance metrics comparing original vs. inverted orders (real and simulated).
+
+- **CSV Files**:
+
+  - orders.csv, orders_pnl.csv: Real order details and PnL.
+  - simulated_orders.csv: Simulated order details.
+  - inverted_state.csv, simulated_inverted_state.csv: Inverted Mode states.
+  - pause_log.csv, simulated_pause_log.csv: SL Streak Pausing events.
+
+## Troubleshooting
+
+- **No Orders Placed**:
+  - Verify PAIRS, TIMEFRAMES, and SIGNAL_ENGINES in config.py.
+  - Check bot.log for API errors or "Dados insuficientes" messages.
+- **No Inverted Orders**:
+  - Ensure INVERTED_MODE_ENABLED or SIMULATED_INVERTED_MODE_ENABLED is True.
+  - Check inverted_state.csv or simulated_inverted_state.csv for SL streak progress.
+- **No Telegram Notifications**:
+  - Verify TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, SIMULATED_TELEGRAM_CHAT_ID.
+  - Check notification toggles (e.g., INVERTED_MODE_NOTIFICATIONS_ENABLED).
+  - Look for "\[TELEGRAM\] Erro" in bot.log.
+- **CSV Errors**:
+  - Re-run initialize_csvs.py to reset schemas.
+  - Ensure filelock is installed (pip install filelock).
+- **API Rate Limits**:
+  - Monitor bot.log for "\[BinanceUtils\] Limite de peso da API próximo".
+  - Increase PRICE_STATISTICS_UPDATE_INTERVAL in config.py if needed.
+
+## Additional Notes
+
+- **Isolation**: Simulated trading (simulated_order_engine.py) uses no Binance API calls, ensuring real trading (main.py, monitor_pnl.py) is unaffected.
+- **Customization**: Adjust config.py to change pairs, timeframes, SL thresholds, or Inverted Mode settings.
+- **Extending the Bot**: Add new signal engines in main.py or enhance analysis in analyze_inverted_mode.py.
+- **Documentation**: See README.md for detailed system information.
+
+For support, consult README.md or contact the developer.

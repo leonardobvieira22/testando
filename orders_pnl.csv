@@ -1,0 +1,1 @@
+order_id,signal_id,pair,timeframe,direction,entry_price,quantity,tp_price,sl_price,tp_order_id,sl_order_id,status,signal_engine,order_mode,timestamp,close_reason,close_order_id,pnl,close_timestamp,close_price
